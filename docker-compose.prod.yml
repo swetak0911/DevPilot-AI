@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: devpilot-prod-backend
+    restart: always
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://devpilot_admin:${POSTGRES_PASSWORD:-devpilot_secure_pass_prod_2026}@postgres:5432/devpilot_prod
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-devpilot-super-secret-key-change-in-production-0123456789abcdef}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/monitoring/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: devpilot-prod-frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: devpilot-prod-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=devpilot_admin
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-devpilot_secure_pass_prod_2026}
+      - POSTGRES_DB=devpilot_prod
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devpilot_admin -d devpilot_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: devpilot-prod-redis
+    restart: always
+    volumes:
+      - redis_prod_data:/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: devpilot-prod-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./devops/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_prod_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: devpilot-prod-grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-devpilot_grafana_2026}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./devops/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./devops/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - grafana_prod_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_prod_data:
+  redis_prod_data:
+  prometheus_prod_data:
+  grafana_prod_data:
+  backend_uploads:

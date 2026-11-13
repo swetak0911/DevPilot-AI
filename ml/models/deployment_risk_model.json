@@ -1,0 +1,102 @@
+{
+  "model_type": "LogisticRiskClassifier",
+  "version": "1.0.0",
+  "feature_names": [
+    "lines_added",
+    "lines_deleted",
+    "total_churn",
+    "files_changed_count",
+    "test_files_count",
+    "test_files_ratio",
+    "config_files_modified",
+    "dependency_files_modified",
+    "author_prior_success_rate",
+    "time_of_day_utc",
+    "is_weekend",
+    "workflow_jobs_count",
+    "has_docker_step",
+    "historical_failure_rate"
+  ],
+  "weights": [
+    0.6511922677961466,
+    0.24665551613187192,
+    0.6889272904153094,
+    0.3012180773036167,
+    -0.2648282988175525,
+    -1.601385675256434,
+    0.03348234185392525,
+    1.238648959356246,
+    -0.9707341150697463,
+    0.37536966070918676,
+    1.2542798939839388,
+    -0.10239744147841688,
+    0.3643244274333337,
+    1.2426110693883168
+  ],
+  "bias": -0.8178587494020446,
+  "means": [
+    124.5625,
+    53.11875,
+    177.68125,
+    6.975,
+    1.43125,
+    0.134528125,
+    0.21875,
+    0.196875,
+    0.80038125,
+    12.528125,
+    0.18125,
+    3.496875,
+    0.64375,
+    0.266175
+  ],
+  "stds": [
+    117.29517931658185,
+    53.51791917118782,
+    130.03143443800914,
+    6.834771874983985,
+    2.5867321828090235,
+    0.18222958879105255,
+    0.41404609559685124,
+    0.39825983153831607,
+    0.11975151241510618,
+    6.745658507444589,
+    0.38582850641656374,
+    1.1281478079086216,
+    0.4796403433137889,
+    0.1447776178167387
+  ],
+  "feature_importances": {
+    "test_files_ratio": 0.1715,
+    "is_weekend": 0.1343,
+    "historical_failure_rate": 0.1331,
+    "dependency_files_modified": 0.1327,
+    "author_prior_success_rate": 0.104,
+    "total_churn": 0.0738,
+    "lines_added": 0.0698,
+    "time_of_day_utc": 0.0402,
+    "has_docker_step": 0.039,
+    "files_changed_count": 0.0323,
+    "test_files_count": 0.0284,
+    "lines_deleted": 0.0264,
+    "workflow_jobs_count": 0.011,
+    "config_files_modified": 0.0036
+  },
+  "metrics": {
+    "roc_auc": 0.947,
+    "precision": 0.81,
+    "recall": 0.919,
+    "f1_score": 0.861,
+    "accuracy": 0.863,
+    "confusion_matrix": [
+      [
+        35,
+        8
+      ],
+      [
+        3,
+        34
+      ]
+    ]
+  }
+}

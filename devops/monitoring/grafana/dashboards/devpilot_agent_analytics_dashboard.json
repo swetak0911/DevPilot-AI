@@ -1,0 +1,125 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 200,
+      "title": "Autonomous Agent Performance & Latencies",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "Agent Execution Latency by Agent Role (P90)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.90, sum(rate(devpilot_agent_execution_seconds_bucket[5m])) by (le, agent_name))",
+          "legendFormat": "Agent: {{agent_name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "lineInterpolation": "smooth" },
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Autonomous Task Outcomes by Type",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "expr": "sum by (status) (devpilot_tasks_total)",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 201,
+      "title": "Deep Learning Defect Intelligence Telemetry",
+      "type": "row"
+    },
+    {
+      "id": 3,
+      "title": "CodeBERT Defect Inferences Total",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 8, "x": 0, "y": 10 },
+      "targets": [
+        {
+          "expr": "sum(devpilot_codebert_inferences_total)",
+          "legendFormat": "Total Inferences",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Defect Detection Rate (%)",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 8, "x": 8, "y": 10 },
+      "targets": [
+        {
+          "expr": "sum(devpilot_codebert_inferences_total{has_defect=\"true\"}) / sum(devpilot_codebert_inferences_total)",
+          "legendFormat": "Defect Rate",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.25 },
+              { "color": "red", "value": 0.50 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Inferences by Programming Language",
+      "type": "barchart",
+      "gridPos": { "h": 5, "w": 8, "x": 16, "y": 10 },
+      "targets": [
+        {
+          "expr": "sum by (language) (devpilot_codebert_inferences_total)",
+          "legendFormat": "{{language}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["devpilot", "agents", "langgraph", "ml"],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "title": "DevPilot AI - Multi-Agent & LLM Analytics",
+  "uid": "devpilot-agent-analytics",
+  "version": 1
+}

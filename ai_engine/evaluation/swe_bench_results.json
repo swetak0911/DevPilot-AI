@@ -1,0 +1,56 @@
+{
+  "suite_name": "SWE-bench Lite Synthetic Benchmark Suite",
+  "timestamp": "2026-11-13T14:30:21Z",
+  "total_instances": 4,
+  "resolved_count": 4,
+  "resolution_rate": 1.0,
+  "pass_at_1_rate": 1.0,
+  "ast_validity_rate": 1.0,
+  "avg_latency_seconds": 0.001,
+  "instances": [
+    {
+      "instance_id": "devpilot-swe-001",
+      "repo": "pallets/flask-lite",
+      "ast_valid": true,
+      "pass_at_1": true,
+      "resolved": true,
+      "repair_iterations": 0,
+      "duration_seconds": 0.001,
+      "patch_diff": "--- a/flask_lite/pagination.py\n+++ b/flask_lite/pagination.py\n@@ -1,6 +1,6 @@\n def get_page_items(items, page, per_page):\n\n-    start = page * per_page\n\n+    start = (page - 1) * per_page\n\n     end = start + per_page\n\n     if start >= len(items):\n\n         raise IndexError('Page out of range')\n\n-    return items[start:end]\n\n+    return items[start:end]",
+      "explanation": "Updated flask_lite/pagination.py to address: Off-by-one boundary defect in pagination calculator causes IndexError when page equals total_pages."
+    },
+    {
+      "instance_id": "devpilot-swe-002",
+      "repo": "psf/requests-lite",
+      "ast_valid": true,
+      "pass_at_1": true,
+      "resolved": true,
+      "repair_iterations": 0,
+      "duration_seconds": 0.001,
+      "patch_diff": "--- a/requests_lite/models.py\n+++ b/requests_lite/models.py\n@@ -1,5 +1,6 @@\n def encode_query_params(params: dict) -> str:\n\n     pairs = []\n\n     for k, v in params.items():\n\n-        pairs.append(f'{k}={v.strip()}')\n\n-    return '&'.join(pairs)\n\n+        val = v.strip() if v is not None else ''\n\n+        pairs.append(f'{k}={val}')\n\n+    return '&'.join(pairs)",
+      "explanation": "Updated requests_lite/models.py to address: Unhandled NoneType parameter causes TypeError during URL query parameter encoding when param value i"
+    },
+    {
+      "instance_id": "devpilot-swe-003",
+      "repo": "fastapi/security-core",
+      "ast_valid": true,
+      "pass_at_1": true,
+      "resolved": true,
+      "repair_iterations": 0,
+      "duration_seconds": 0.001,
+      "patch_diff": "--- a/security_core/auth.py\n+++ b/security_core/auth.py\n@@ -1,4 +1,5 @@\n+import hmac\n\n def verify_api_token(provided_token: str, secret_token: str) -> bool:\n\n     if len(provided_token) != len(secret_token):\n\n         return False\n\n-    return provided_token == secret_token\n\n+    return hmac.compare_digest(provided_token, secret_token)",
+      "explanation": "Updated security_core/auth.py to address: Constant-time string comparison is bypassed during API token verification, introducing timing attack"
+    },
+    {
+      "instance_id": "devpilot-swe-004",
+      "repo": "django/orm-query-builder",
+      "ast_valid": true,
+      "pass_at_1": true,
+      "resolved": true,
+      "repair_iterations": 0,
+      "duration_seconds": 0.001,
+      "patch_diff": "--- a/orm/builder.py\n+++ b/orm/builder.py\n@@ -1,3 +1,5 @@\n+import re\n\n def build_select_query(table: str, order_by: str) -> str:\n\n     # Potential injection vulnerability via string concatenation\n\n-    return f'SELECT * FROM {table} ORDER BY {order_by}'\n\n+    safe_order = re.sub(r'[^a-zA-Z0-9_]', '', order_by)\n\n+    return f'SELECT * FROM {table} ORDER BY {safe_order}'",
+      "explanation": "Updated orm/builder.py to address: SQL injection vulnerability in raw query builder when order_by clause is unescaped."
+    }
+  ]
+}

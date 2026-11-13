@@ -218,3 +218,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# DevPilot-AI Platform
+.env
+*.db
+*.sqlite3
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+backend/__pycache__/
+backend/.pytest_cache/
+ai_engine/__pycache__/
+execution/sandbox/workspaces/
+execution/workspaces/
+workspaces/
+powershell
+test.txt
+

@@ -1,0 +1,6 @@
+{"idx": 13, "target": 0, "func": "def format_output(items: list) -> str:\n    return ', '.join(str(x) for x in items)"}
+{"idx": 14, "target": 1, "func": "def run_system_script(cmd: str):\n    import os\n    # Command injection vulnerability\n    os.system('sh -c ' + cmd)"}
+{"idx": 15, "target": 0, "func": "def compute_average(values: list) -> float:\n    if not values:\n        return 0.0\n    return sum(values) / len(values)"}
+{"idx": 16, "target": 1, "func": "def average_without_guard(values: list) -> float:\n    # Unhandled division by zero\n    return sum(values) / len(values)"}
+{"idx": 17, "target": 0, "func": "def hash_password(password: str, salt: bytes) -> bytes:\n    return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)"}
+{"idx": 18, "target": 1, "func": "def insecure_md5_hash(password: str) -> str:\n    import hashlib\n    # Broken cryptographic hash algorithm for passwords\n    return hashlib.md5(password.encode()).hexdigest()"}

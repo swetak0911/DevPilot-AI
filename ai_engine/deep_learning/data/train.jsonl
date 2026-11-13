@@ -1,0 +1,12 @@
+{"idx": 1, "target": 0, "func": "def calculate_discount(price: float, rate: float) -> float:\n    if rate < 0 or rate > 1:\n        raise ValueError('Invalid rate')\n    return round(price * (1 - rate), 2)"}
+{"idx": 2, "target": 1, "func": "def execute_user_query(query: str, db_connection):\n    cursor = db_connection.cursor()\n    # SQL injection vulnerability via raw string formatting\n    cursor.execute(f'SELECT * FROM users WHERE name = \\'{query}\\'')\n    return cursor.fetchall()"}
+{"idx": 3, "target": 0, "func": "def safe_divide(numerator: float, denominator: float) -> float:\n    if denominator == 0:\n        raise ZeroDivisionError('Denominator cannot be zero')\n    return numerator / denominator"}
+{"idx": 4, "target": 1, "func": "def run_dynamic_command(user_input: str):\n    # Arbitrary code execution vulnerability\n    eval(user_input)"}
+{"idx": 5, "target": 0, "func": "def read_file_safely(path: str) -> str:\n    with open(path, 'r', encoding='utf-8') as f:\n        return f.read()"}
+{"idx": 6, "target": 1, "func": "def read_config_file(path: str) -> str:\n    # Unclosed file handle resource leak\n    f = open(path, 'r')\n    data = f.read()\n    return data"}
+{"idx": 7, "target": 0, "func": "def get_user_profile(user_id: str, repo):\n    user = repo.find_by_id(user_id)\n    if user is None:\n        return None\n    return user.to_dict()"}
+{"idx": 8, "target": 1, "func": "def get_username(user_id: str, repo):\n    user = repo.find_by_id(user_id)\n    # Unchecked None / Null Pointer Dereference\n    return user.name.upper()"}
+{"idx": 9, "target": 0, "func": "def authenticate(token: str, secret: str) -> bool:\n    if not token or not secret:\n        return False\n    return hmac.compare_digest(token, secret)"}
+{"idx": 10, "target": 1, "func": "def suppress_and_continue(task):\n    try:\n        task.run()\n    except:\n        # Silent exception suppression anti-pattern\n        pass"}
+{"idx": 11, "target": 0, "func": "def sanitize_path(base_dir: str, filename: str) -> str:\n    normalized = os.path.abspath(os.path.join(base_dir, filename))\n    if not normalized.startswith(os.path.abspath(base_dir)):\n        raise ValueError('Path traversal detected')\n    return normalized"}
+{"idx": 12, "target": 1, "func": "def load_untrusted_pickle(data: bytes):\n    import pickle\n    # Insecure deserialization\n    return pickle.loads(data)"}
