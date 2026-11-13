@@ -1,0 +1,72 @@
+# ==============================================================================
+# DevPilot AI - Production .dockerignore Configuration
+# Tech Stack: Python
+# ==============================================================================
+
+# --- VCS & Repositories ---
+.git
+.gitignore
+.gitattributes
+.github
+.gitlab-ci.yml
+.hg
+.svn
+
+# --- Secrets & Private Credentials ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json
+service-account*.json
+.aws/
+.azure/
+
+# --- Docker & CI/CD Configuration ---
+Dockerfile*
+docker-compose*
+.dockerignore
+.devcontainer
+
+# --- Documentation & Test Artifacts ---
+docs/
+*.md
+LICENSE*
+tests/
+test/
+spec/
+coverage/
+.coverage
+htmlcov/
+
+# --- OS & Editor Metadata ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Python Build & Runtime Artifacts ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+*.log
