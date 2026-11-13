@@ -9,7 +9,8 @@ metadata:
 data:
     ENVIRONMENT: "production"
     LOG_LEVEL: "info"
-    PORT: "8080"---
+    PORT: "8080"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -79,7 +80,8 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 3
-          failureThreshold: 2---
+          failureThreshold: 2
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -96,7 +98,8 @@ spec:
   - name: http
     port: 80
     targetPort: 8080
-    protocol: TCP---
+    protocol: TCP
+---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -123,7 +126,8 @@ spec:
       name: memory
       target:
         type: Utilization
-        averageUtilization: 80---
+        averageUtilization: 80
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
