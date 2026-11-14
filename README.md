@@ -31,40 +31,12 @@
 ## 🌟 The Five Integrated Pillars
 
 ```mermaid
-mindmap
-  root((DevPilot AI))
-    Autonomous Software Engineering
-      Multi-Language AST Parsing
-      Function & Class Chunker
-      AST-Compliant Unified Diffs
-      Bounded Self-Healing Loop
-      Isolated Docker Sandboxes
-    Agentic AI & Orchestration
-      LangGraph StateGraph DAG
-      Planning Agent
-      Coding Agent
-      Patch & AST Validator
-      Senior AI Code Reviewer
-      Human-in-the-Loop Interrupts
-    Deep Learning & Predictive ML
-      Fine-Tuned CodeBERT Classifier
-      Structural Anti-Pattern Heuristics
-      ML Deployment Risk Engine ROC-AUC 0.955
-      Localized SHAP Factor Attributions
-      Actionable Mitigation Advisories
-    Intelligent DevOps & Cloud
-      Multi-Job GitHub Actions Synthesis
-      CI Failure Classification
-      Multi-Stage Hadolint Dockerfiles
-      Kubernetes PSS Restricted Manifests
-      Terraform HCL Formatter & Linter
-      Stateful Resource Destruction Gate
-    Observability & Enterprise Security
-      Prometheus v0.0.4 Text Exposition
-      OpenTelemetry Hierarchical Tracing
-      Structured JSON Logging with Trace IDs
-      Security Audit Logging & AES-256 Auth
-      Static Secret Leak & Path Traversal Guards
+flowchart LR
+    Root["<b>DevPilot AI Platform</b>"] --> P1["<b>1. Autonomous Software Engineering</b><br/>• Multi-Language AST Parsing<br/>• Bounded Self-Healing Loops<br/>• Isolated Docker Sandboxes"]
+    Root --> P2["<b>2. Agentic AI & Orchestration</b><br/>• LangGraph StateGraph DAG<br/>• Planning & Coding Agents<br/>• Human-in-the-Loop Interrupts"]
+    Root --> P3["<b>3. Deep Learning & Predictive ML</b><br/>• Fine-Tuned CodeBERT Classifier<br/>• ML Deployment Risk ROC-AUC 0.955<br/>• Localized SHAP Attributions"]
+    Root --> P4["<b>4. Intelligent DevOps & Cloud</b><br/>• GitHub Actions Matrix Synthesis<br/>• Hadolint Docker & K8s PSS Restricted<br/>• Terraform HITL Governance Gate"]
+    Root --> P5["<b>5. Observability & Security</b><br/>• Prometheus v0.0.4 Exporter<br/>• OpenTelemetry Distributed Tracing<br/>• Secret Scanning & Traversal Guards"]
 ```
 
 ---
@@ -73,50 +45,50 @@ mindmap
 
 ```mermaid
 flowchart TD
-    User([Developer / DevOps Lead]) <--> WebApp[React 18 + Vite SaaS UI Dashboard]
-    WebApp <--> Nginx[Hardened Nginx Alpine Reverse Proxy]
-    Nginx <--> APIGateway[FastAPI Dual-Prefix REST Gateway /api/v1 & /api]
+    User(["Developer / DevOps Lead"]) <--> WebApp["React 18 + Vite SaaS UI Dashboard"]
+    WebApp <--> Nginx["Hardened Nginx Alpine Reverse Proxy"]
+    Nginx <--> APIGateway["FastAPI Dual-Prefix REST Gateway /api/v1 & /api"]
 
-    subgraph CoreEngine [DevPilot Multi-Agent Orchestration Engine]
-        APIGateway <--> StateGraph[LangGraph Cyclic StateGraph Engine]
-        StateGraph --> AgentPlanner[Planning Agent]
-        StateGraph --> AgentCoder[Coding Agent & Unified Diff Synthesizer]
-        StateGraph --> AgentValidator[Patch AST & Boundary Validator]
-        StateGraph --> AgentReviewer[AI Peer Reviewer & Regression Scorecard]
-        StateGraph --> SelfRepair[Bounded Self-Healing Loop (Max 3 Iters)]
+    subgraph CoreEngine ["DevPilot Multi-Agent Orchestration Engine"]
+        APIGateway <--> StateGraph["LangGraph Cyclic StateGraph Engine"]
+        StateGraph --> AgentPlanner["Planning Agent"]
+        StateGraph --> AgentCoder["Coding Agent & Unified Diff Synthesizer"]
+        StateGraph --> AgentValidator["Patch AST & Boundary Validator"]
+        StateGraph --> AgentReviewer["AI Peer Reviewer & Regression Scorecard"]
+        StateGraph --> SelfRepair["Bounded Self-Healing Loop (Max 3 Iters)"]
     end
 
-    subgraph IntelligencePlane [Deep Learning & Predictive Subsystems]
-        APIGateway <--> HybridRAG[AST Boundary Chunker & Hybrid BM25 / Vector RAG]
-        APIGateway <--> CodeBERT[Fine-Tuned CodeBERT Neural Defect Classifier]
-        APIGateway <--> MLRiskEngine[Supervised Deployment Risk Predictor & SHAP Explainer]
+    subgraph IntelligencePlane ["Deep Learning & Predictive Subsystems"]
+        APIGateway <--> HybridRAG["AST Boundary Chunker & Hybrid BM25 / Vector RAG"]
+        APIGateway <--> CodeBERT["Fine-Tuned CodeBERT Neural Defect Classifier"]
+        APIGateway <--> MLRiskEngine["Supervised Deployment Risk Predictor & SHAP Explainer"]
     end
 
-    subgraph DevOpsPlane [DevOps, Cloud & Infrastructure Subsystems]
-        APIGateway <--> CICDEngine[GitHub Actions Pipeline Synthesizer & CI Log Failure Agent]
-        APIGateway <--> DockerEngine[Multi-Stage Dockerfile Synthesizer & Hadolint Linter]
-        APIGateway <--> K8sEngine[Kubernetes PSS Restricted Generator & OpenAPI Validator]
-        APIGateway <--> TerraformEngine[HCL Parser, terraform fmt & HITL Approval Gate]
+    subgraph DevOpsPlane ["DevOps, Cloud & Infrastructure Subsystems"]
+        APIGateway <--> CICDEngine["GitHub Actions Pipeline Synthesizer & CI Log Failure Agent"]
+        APIGateway <--> DockerEngine["Multi-Stage Dockerfile Synthesizer & Hadolint Linter"]
+        APIGateway <--> K8sEngine["Kubernetes PSS Restricted Generator & OpenAPI Validator"]
+        APIGateway <--> TerraformEngine["HCL Parser, terraform fmt & HITL Approval Gate"]
     end
 
-    subgraph ExecutionPlane [Sandboxed Isolation & Git Version Control]
-        SelfRepair <--> IsolatedSandbox[Non-Privileged Docker Sandbox Worker]
-        IsolatedSandbox --> PytestRunner[Unit Test Runner & Error Trace Analyzer]
-        APIGateway <--> GitPersistence[Git Branching & Atomic Commit Service]
+    subgraph ExecutionPlane ["Sandboxed Isolation & Git Version Control"]
+        SelfRepair <--> IsolatedSandbox["Non-Privileged Docker Sandbox Worker"]
+        IsolatedSandbox --> PytestRunner["Unit Test Runner & Error Trace Analyzer"]
+        APIGateway <--> GitPersistence["Git Branching & Atomic Commit Service"]
     end
 
-    subgraph ObservabilityPlane [Enterprise Observability & Compliance]
-        APIGateway --> Tracer[OpenTelemetry Distributed Tracer]
-        APIGateway --> Metrics[Thread-Safe Prometheus Exporter]
-        APIGateway --> JSONLog[Correlated JSON Logger with Trace IDs]
-        APIGateway --> AuditService[Immutable Security Audit Logger]
-        Metrics --> PrometheusServer[Prometheus Server :9090]
-        PrometheusServer --> Grafana[Grafana Dashboards :3000]
+    subgraph ObservabilityPlane ["Enterprise Observability & Compliance"]
+        APIGateway --> Tracer["OpenTelemetry Distributed Tracer"]
+        APIGateway --> Metrics["Thread-Safe Prometheus Exporter"]
+        APIGateway --> JSONLog["Correlated JSON Logger with Trace IDs"]
+        APIGateway --> AuditService["Immutable Security Audit Logger"]
+        Metrics --> PrometheusServer["Prometheus Server :9090"]
+        PrometheusServer --> Grafana["Grafana Dashboards :3000"]
     end
 
-    subgraph StorageTier [High-Performance Persistence & Cache]
-        APIGateway <--> PostgresDB[(PostgreSQL 16 + pgvector / SQLite)]
-        APIGateway <--> RedisCache[(Redis 7 In-Memory Cache & Message Broker)]
+    subgraph StorageTier ["High-Performance Persistence & Cache"]
+        APIGateway <--> PostgresDB[("PostgreSQL 16 + pgvector / SQLite")]
+        APIGateway <--> RedisCache[("Redis 7 In-Memory Cache & Message Broker")]
     end
 ```
 
