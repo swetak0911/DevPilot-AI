@@ -14,6 +14,14 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Authenticated AES-GCM encryption import with fallback
+try:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    HAS_AESGCM = True
+except ImportError:
+    AESGCM = None
+    HAS_AESGCM = False
+
 # JWT library import with fallback
 try:
     from jose import jwt, JWTError
@@ -67,6 +75,11 @@ except Exception:
                         expected_hex = parts[2]
                         key = hashlib.pbkdf2_hmac("sha256", plain_password.encode("utf-8"), salt.encode("utf-8"), 100000)
                         return hmac.compare_digest(key.hex(), expected_hex)
+                env = (getattr(settings, "ENVIRONMENT", "") or "").strip().lower()
+                if env in {"production", "prod"}:
+                    logger.error("Insecure unsalted password hash rejected in production environment.")
+                    return False
+                logger.warning("Verifying legacy unsalted hash in non-production environment.")
                 expected = hashlib.sha256((plain_password + settings.SECRET_KEY).encode()).hexdigest()
                 return hmac.compare_digest(expected, hashed_password)
             except Exception:
@@ -82,7 +95,10 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     to_encode.update({"exp": expire})
     if jwt is not None:
         return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    # Minimal fallback token if jwt module is not installed
+    env = (getattr(settings, "ENVIRONMENT", "") or "").strip().lower()
+    if env in {"production", "prod"}:
+        raise RuntimeError("JWT library (python-jose or PyJWT) is required for token generation in production.")
+    # Minimal fallback token if jwt module is not installed in development
     token_raw = f"{to_encode['sub']}:{int(expire.timestamp())}"
     sig = hmac.new(settings.SECRET_KEY.encode(), token_raw.encode(), hashlib.sha256).hexdigest()
     return f"devpilot.{base64.urlsafe_b64encode(token_raw.encode()).decode()}.{sig}"
@@ -111,65 +127,110 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _get_encryption_key() -> bytes:
+    """Derives a deterministic 256-bit (32-byte) key from settings.SECRET_KEY."""
+    if not settings.SECRET_KEY:
+        raise ValueError("Encryption configuration error: settings.SECRET_KEY is empty")
+    return hashlib.sha256(settings.SECRET_KEY.encode("utf-8")).digest()
+
+
 def encrypt_token(token: str) -> str:
     """
-    Encrypts sensitive OAuth tokens with HMAC-SHA256 authenticated symmetric encryption.
-    Produces ciphertext prefixed with 'enc:'.
+    Encrypts sensitive OAuth tokens with AES-256-GCM authenticated encryption.
+    Produces ciphertext prefixed with 'enc:v2:' containing a 12-byte nonce,
+    ciphertext, and a 16-byte GCM authentication tag.
     """
     if not token:
         return ""
-    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+
+    key = _get_encryption_key()
+    if HAS_AESGCM and AESGCM is not None:
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)  # NIST standard 96-bit nonce for GCM
+        ciphertext = aesgcm.encrypt(nonce, token.encode("utf-8"), None)
+        payload = nonce + ciphertext
+        return "enc:v2:" + base64.urlsafe_b64encode(payload).decode("utf-8")
+
+    # In production, cryptography AES-GCM is strictly required
+    env = (getattr(settings, "ENVIRONMENT", "") or "").strip().lower()
+    if env in {"production", "prod"}:
+        raise RuntimeError("The cryptography library is required for AES-256-GCM token encryption in production.")
+
+    # Non-production fallback (legacy XOR+HMAC)
     iv = os.urandom(16)
-    
-    # Generate keystream via repeated SHA256 of key + iv + counter
     token_bytes = token.encode("utf-8")
     keystream = bytearray()
     counter = 0
     while len(keystream) < len(token_bytes):
         keystream.extend(hashlib.sha256(key + iv + counter.to_bytes(4, "big")).digest())
         counter += 1
-    
-    # XOR cipher
     ciphertext = bytes(a ^ b for a, b in zip(token_bytes, keystream[:len(token_bytes)]))
     tag = hmac.new(key, iv + ciphertext, hashlib.sha256).digest()
-    
     payload = iv + tag + ciphertext
     return "enc:" + base64.urlsafe_b64encode(payload).decode("utf-8")
 
 
 def decrypt_token(encrypted_token: str) -> str:
     """
-    Decrypts and verifies authentication tag of encrypted OAuth tokens.
-    Raises Exception if data has been tampered with.
+    Decrypts and validates the authentication tag of encrypted tokens.
+    Supports 'enc:v2:' (AES-256-GCM) and maintains backward compatibility
+    with legacy 'enc:' (HMAC-SHA256 authenticated XOR stream) tokens.
     """
-    if not encrypted_token or not encrypted_token.startswith("enc:"):
-        raise ValueError("Invalid encrypted token format: missing 'enc:' prefix")
-    
-    raw_b64 = encrypted_token[4:]
-    try:
-        payload = base64.urlsafe_b64decode(raw_b64.encode("utf-8"))
-    except Exception as exc:
-        raise ValueError(f"Base64 decoding failed: {exc}")
-    
-    if len(payload) < 48:  # 16 bytes IV + 32 bytes SHA256 Tag
-        raise ValueError("Encrypted payload is corrupted: length less than header size")
-    
-    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
-    iv = payload[:16]
-    tag = payload[16:48]
-    ciphertext = payload[48:]
-    
-    # Authenticate tag
-    expected_tag = hmac.new(key, iv + ciphertext, hashlib.sha256).digest()
-    if not hmac.compare_digest(tag, expected_tag):
-        raise ValueError("Token integrity verification failed: ciphertext has been tampered with")
-    
-    # Keystream decrypt
-    keystream = bytearray()
-    counter = 0
-    while len(keystream) < len(ciphertext):
-        keystream.extend(hashlib.sha256(key + iv + counter.to_bytes(4, "big")).digest())
-        counter += 1
-    
-    plaintext_bytes = bytes(a ^ b for a, b in zip(ciphertext, keystream[:len(ciphertext)]))
-    return plaintext_bytes.decode("utf-8")
+    if not encrypted_token or not isinstance(encrypted_token, str):
+        raise ValueError("Invalid encrypted token: token is empty or not a string")
+
+    key = _get_encryption_key()
+
+    if encrypted_token.startswith("enc:v2:"):
+        raw_b64 = encrypted_token[len("enc:v2:"):]
+        try:
+            payload = base64.urlsafe_b64decode(raw_b64.encode("utf-8"))
+        except Exception:
+            raise ValueError("Invalid encrypted token encoding") from None
+
+        if len(payload) < 28:  # 12-byte nonce + 16-byte minimum tag
+            raise ValueError("Corrupted encrypted token: payload is too short")
+
+        nonce = payload[:12]
+        ciphertext = payload[12:]
+
+        if HAS_AESGCM and AESGCM is not None:
+            try:
+                aesgcm = AESGCM(key)
+                plaintext_bytes = aesgcm.decrypt(nonce, ciphertext, None)
+                return plaintext_bytes.decode("utf-8")
+            except Exception:
+                raise ValueError("Token integrity verification failed or invalid decryption key") from None
+        else:
+            raise RuntimeError("The cryptography library is required to decrypt AES-256-GCM tokens")
+
+    elif encrypted_token.startswith("enc:"):
+        # Backward compatibility for legacy 'enc:' tokens
+        logger.warning("Decrypting legacy 'enc:' token; consider migrating to 'enc:v2:'")
+        raw_b64 = encrypted_token[4:]
+        try:
+            payload = base64.urlsafe_b64decode(raw_b64.encode("utf-8"))
+        except Exception:
+            raise ValueError("Invalid legacy encrypted token encoding") from None
+
+        if len(payload) < 48:  # 16 bytes IV + 32 bytes SHA256 Tag
+            raise ValueError("Legacy encrypted payload is corrupted: length less than header size")
+
+        iv = payload[:16]
+        tag = payload[16:48]
+        ciphertext = payload[48:]
+
+        expected_tag = hmac.new(key, iv + ciphertext, hashlib.sha256).digest()
+        if not hmac.compare_digest(tag, expected_tag):
+            raise ValueError("Token integrity verification failed: ciphertext has been tampered with")
+
+        keystream = bytearray()
+        counter = 0
+        while len(keystream) < len(ciphertext):
+            keystream.extend(hashlib.sha256(key + iv + counter.to_bytes(4, "big")).digest())
+            counter += 1
+
+        plaintext_bytes = bytes(a ^ b for a, b in zip(ciphertext, keystream[:len(ciphertext)]))
+        return plaintext_bytes.decode("utf-8")
+
+    raise ValueError("Invalid encrypted token format: missing 'enc:' or 'enc:v2:' prefix")

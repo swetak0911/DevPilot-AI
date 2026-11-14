@@ -1,8 +1,9 @@
 """
 DevPilot AI - Machine Learning Deployment Risk Model Trainer
 Trains supervised classification models on commit and workflow telemetry.
-Evaluates ROC-AUC (target >= 0.85), Precision, Recall, F1, and confusion matrix.
-Persists model weights for low-latency production inference.
+Evaluates ROC-AUC (target >= 0.85 on synthetic telemetry data validation split), Precision, Recall, F1, and confusion matrix.
+Persists model weights for low-latency inference.
+Note: Telemetry data is synthetic by default for benchmarking and pre-deployment estimation.
 """
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Tuple, Optional

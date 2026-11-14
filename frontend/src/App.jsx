@@ -46,6 +46,7 @@ export default function App() {
             <Route path="/repositories" element={<RepositoryExplorerPage />} />
             <Route path="/tasks/new" element={<TaskCreationPage />} />
             <Route path="/workspace" element={<AgentWorkspacePage />} />
+            <Route path="/agent" element={<Navigate to="/workspace" replace />} />
             <Route path="/review" element={<CodeReviewPage />} />
             <Route path="/devops" element={<DevOpsPage />} />
             <Route path="/risk" element={<DeploymentRiskPage />} />

@@ -219,8 +219,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# DevPilot-AI Platform
+# DevPilot-AI Platform & Secrets
 .env
+.env.*
+!.env.example
 *.db
 *.sqlite3
 frontend/node_modules/
@@ -232,6 +234,6 @@ ai_engine/__pycache__/
 execution/sandbox/workspaces/
 execution/workspaces/
 workspaces/
-powershell
+powershell*
 test.txt
 

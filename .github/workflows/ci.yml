@@ -57,7 +57,7 @@ jobs:
       - name: Execute Automated Tests
         run: |
           mkdir -p test-results
-          pytest --junitxml=test-results/junit.xml || true
+          pytest --junitxml=test-results/junit.xml
 
       - name: Archive Test Results
         if: always()

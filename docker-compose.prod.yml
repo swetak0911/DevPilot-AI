@@ -11,9 +11,9 @@ services:
       - ENVIRONMENT=production
       - DEBUG=false
       - LOG_LEVEL=INFO
-      - DATABASE_URL=postgresql://devpilot_admin:${POSTGRES_PASSWORD:-devpilot_secure_pass_prod_2026}@postgres:5432/devpilot_prod
+      - DATABASE_URL=postgresql://devpilot_admin:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable must be set for production}@postgres:5432/devpilot_prod
       - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=${SECRET_KEY:-devpilot-super-secret-key-change-in-production-0123456789abcdef}
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY environment variable must be set for production}
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,7 +51,7 @@ services:
     restart: always
     environment:
       - POSTGRES_USER=devpilot_admin
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-devpilot_secure_pass_prod_2026}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable must be set for production}
       - POSTGRES_DB=devpilot_prod
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
@@ -85,7 +85,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-devpilot_grafana_2026}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD environment variable must be set for production}
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - ./devops/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro

@@ -2,9 +2,18 @@
 DevPilot AI Configuration Settings
 """
 import os
-from typing import List, Union
-from pydantic import AnyHttpUrl, field_validator
+from typing import List, Union, Set
+from pydantic import AnyHttpUrl, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+INSECURE_SECRET_KEYS: Set[str] = {
+    "devpilot-super-secret-key-change-in-production-0123456789abcdef",
+    "devpilot-insecure-secret-key-change-in-production-0123456789abcdef",
+    "devpilot-docker-secret-change-in-prod-0123456789",
+    "secret",
+    "changeme",
+    "password",
+}
 
 
 class Settings(BaseSettings):
@@ -39,6 +48,23 @@ class Settings(BaseSettings):
         elif isinstance(v, list):
             return v
         return ["*"]
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        env = (self.ENVIRONMENT or "").strip().lower()
+        if env in {"production", "prod"}:
+            if not self.SECRET_KEY or self.SECRET_KEY in INSECURE_SECRET_KEYS or len(self.SECRET_KEY) < 32:
+                raise ValueError(
+                    "Insecure or default SECRET_KEY detected in production environment! "
+                    "A unique, cryptographically strong SECRET_KEY (minimum 32 characters) "
+                    "must be provided via the SECRET_KEY environment variable."
+                )
+            if self.DATABASE_URL.startswith("sqlite"):
+                raise ValueError(
+                    "SQLite database cannot be used in a production environment! "
+                    "Please configure a valid PostgreSQL DATABASE_URL via environment variables."
+                )
+        return self
 
     # Security & Authentication
     SECRET_KEY: str = "devpilot-super-secret-key-change-in-production-0123456789abcdef"

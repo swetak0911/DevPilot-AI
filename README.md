@@ -22,9 +22,9 @@
 
 1. **Detects & Diagnoses**: Ingests codebases and pipeline failure traces, parsing multi-language Abstract Syntax Trees (Python, TypeScript/JavaScript, Java, C++) and classifying defect patterns with a fine-tuned **CodeBERT** neural classifier.
 2. **Plans & Synthesizes**: Coordinates specialized autonomous agents via **LangGraph** (Planning, Coding, Testing, and Review agents) to formulate targeted execution plans and generate unified diff patches adhering to codebase contracts.
-3. **Validates & Heals**: Executes patches inside isolated non-privileged Docker execution sandboxes with bounded self-healing loops that iteratively interpret test failures, adjust AST logic, and guarantee regression-free code.
+3. **Validates & Heals**: Executes patches inside isolated non-privileged Docker execution sandboxes with bounded self-healing loops that iteratively interpret test failures, adjust AST logic, and validate regression prevention against unit test suites.
 4. **Automates DevOps Delivery**: Synthesizes multi-job GitHub Actions CI/CD matrix pipelines, produces hardened multi-stage Dockerfiles (Hadolint score: 100/100), generates Kubernetes Pod Security Standards (PSS) Restricted manifests, and validates Terraform IaC with mandatory Human-in-the-Loop (HITL) gates intercepting destructive cloud actions.
-5. **Predicts & Observes**: Forecasts pre-deployment pipeline failure risks using a supervised machine learning engine (**ROC-AUC = 0.955**) with localized SHAP factor attributions, streaming real-time metrics to Prometheus and OpenTelemetry distributed trace spans to Grafana.
+5. **Predicts & Observes**: Forecasts pre-deployment pipeline failure risks using a supervised machine learning engine (**ROC-AUC = 0.955** evaluated on synthetic telemetry data) with localized SHAP factor attributions, streaming real-time metrics to Prometheus and OpenTelemetry distributed trace spans to Grafana.
 
 ---
 
@@ -193,7 +193,7 @@ npm run dev
 
 ## 🐳 Production Deployment (6-Container Docker Compose)
 
-DevPilot AI includes a hardened, production-ready multi-container topology orchestrated via [docker-compose.prod.yml](file:///c:/Users/LENOVO/DevPilot-AI/docker-compose.prod.yml):
+DevPilot AI includes a hardened, production-ready multi-container topology orchestrated via [docker-compose.prod.yml](./docker-compose.prod.yml):
 
 ```
        [Client Browser]
@@ -235,7 +235,7 @@ docker compose -f docker-compose.prod.yml logs -f
 | **PostgreSQL** | `devpilot-prod-postgres` | 5432 | **5432** | PostgreSQL 16 + pgvector vector embeddings |
 | **Redis** | `devpilot-prod-redis` | 6379 | **6379** | Fast task state cache & broker |
 | **Prometheus** | `devpilot-prod-prometheus` | 9090 | **9090** | Telemetry metrics scraper & storage |
-| **Grafana** | `devpilot-prod-grafana` | 3000 | **3000** | Visual analytics dashboards (`admin` / `devpilot_grafana_2026`) |
+| **Grafana** | `devpilot-prod-grafana` | 3000 | **3000** | Visual analytics dashboards (credentials configured via `GRAFANA_ADMIN_PASSWORD`) |
 
 ---
 
@@ -259,29 +259,30 @@ All REST APIs are dual-mounted under both `/api` and `/api/v1` prefixes for robu
 
 ---
 
-## 🧪 SWE-bench Lite Benchmark Evaluation
+## 🧪 Curated SWE-bench Lite Defect Suite Evaluation
 
-DevPilot AI includes a built-in benchmark harness ([ai_engine/evaluation/swe_bench_evaluator.py](file:///c:/Users/LENOVO/DevPilot-AI/ai_engine/evaluation/swe_bench_evaluator.py)) evaluating autonomous agents against curated real-world defects modelled after SWE-bench Lite:
+DevPilot AI includes a built-in benchmark harness ([ai_engine/evaluation/swe_bench_evaluator.py](./ai_engine/evaluation/swe_bench_evaluator.py)) evaluating autonomous agents against curated defect instances modelled after SWE-bench Lite patterns (boundary off-by-one, NoneType parameter error, token timing attack, SQL injection):
 
-| Benchmark Metric | Industry Baseline | Target Threshold | DevPilot AI Evaluated Result | Outcome |
-|---|:---:|:---:|:---:|:---:|
-| **Pass@1 Resolution Rate** | 22.0% | $\ge 70.0\%$ | **100.0%** (4 / 4 instances) | **EXCEEDED** |
-| **AST Patch Validity Rate** | 68.0% | $\ge 85.0\%$ | **100.0%** | **EXCEEDED** |
-| **Self-Healing Convergence** | 3.5 iters | $\le 2$ iterations | **1.0 iterations avg** | **EXCEEDED** |
-| **Mean Task Latency** | 45.0s | $\le 5.0$ seconds | **0.012 seconds** | **EXCEEDED** |
-| **Defect Coverage** | Partial | Boundary, NoneType, Security, SQLi | 100% Coverage across 4 curated suites | **EXCEEDED** |
+| Benchmark Metric | Target Threshold | DevPilot AI Curated Suite Result | Status |
+|---|:---:|:---:|:---:|
+| **Pass@1 Resolution Rate** | $\ge 70.0\%$ | **100.0%** (4 / 4 instances) | **PASS** |
+| **AST Patch Validity Rate** | $\ge 85.0\%$ | **100.0%** | **PASS** |
+| **Self-Healing Convergence** | $\le 2$ iterations | **1.0 iterations avg** | **PASS** |
+| **Mean Task Latency** | $\le 5.0$ seconds | **0.012 seconds** | **PASS** |
+| **Defect Coverage** | Boundary, NoneType, Security, SQLi | 4 / 4 curated defect suites | **PASS** |
 
-> Benchmark evaluation results are persisted to disk at [ai_engine/evaluation/swe_bench_results.json](file:///c:/Users/LENOVO/DevPilot-AI/ai_engine/evaluation/swe_bench_results.json).
+> *Note: This evaluation runs against DevPilot AI's curated 4-instance test suite designed to validate multi-agent orchestration, AST patching, and bounded self-healing convergence. It is distinct from the 300-instance official SWE-bench Lite leaderboard.*
+> Benchmark evaluation results are persisted to disk at [ai_engine/evaluation/swe_bench_results.json](./ai_engine/evaluation/swe_bench_results.json).
 
 ---
 
 ## 🛡️ Enterprise Security, Governance & Guardrails
 
-- **Static Secret Scanning**: Continuously scans code and patch diffs with [devops/security/secret_scanner.py](file:///c:/Users/LENOVO/DevPilot-AI/devops/security/secret_scanner.py) detecting AWS Access Keys, GitHub PATs, unencrypted private keys, and slack tokens with automated redaction.
+- **Static Secret Scanning**: Continuously scans code and patch diffs with [devops/security/secret_scanner.py](./devops/security/secret_scanner.py) detecting AWS Access Keys, GitHub PATs, unencrypted private keys, and slack tokens with automated redaction.
 - **Path Traversal Protection**: Enforces boundary validation using `os.path.commonpath` across all filesystem traversal operations, neutralizing directory traversal (`../`) vulnerabilities.
 - **Pod Security Standards (PSS) Restricted Compliance**: Generated Kubernetes manifests enforce `runAsNonRoot: true`, `runAsUser: 10001`, `readOnlyRootFilesystem: true`, `allowPrivilegeEscalation: false`, and drop all Linux capabilities (`drop: ["ALL"]`).
 - **Human-in-the-Loop (HITL) Cloud Approval Gate**: Intercepts destructive Terraform actions on persistent stateful resources (`aws_db_instance`, `aws_s3_bucket`), blocking execution until an authorized cryptographic approval token is signed.
-- **Cryptographic Credential Storage**: Symmetric token encryption with AES-256 and HMAC-SHA256 signature verification for all stored third-party access tokens.
+- **Cryptographic Credential Storage**: Symmetric token encryption with AES-256-GCM authenticated encryption and backward-compatible verification for stored access tokens.
 - **Immutable Audit Logging**: Every administrative action, security event, and patch approval is recorded into an append-only audit trail with origin IP and user correlation.
 
 ---
@@ -289,7 +290,7 @@ DevPilot AI includes a built-in benchmark harness ([ai_engine/evaluation/swe_ben
 ## 🎬 Live Platform Walkthrough
 
 ### Workflow A: Autonomous Software Engineering & Defect Remediation
-1. **Navigate to the Agent Workspace**: Open `http://localhost:5173/agent`.
+1. **Navigate to the Agent Workspace**: Open `http://localhost:5173/workspace`.
 2. **Submit a Task**: Enter an instruction, e.g., *"Fix ZeroDivisionError in calculate_tax when rate is zero"*.
 3. **Observe the Autonomous Multi-Agent Loop**:
    - **CodeBERT Defect Scanner**: Inspects AST and flags zero-division vulnerability.
